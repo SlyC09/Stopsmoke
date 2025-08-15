@@ -347,15 +347,28 @@ function bindUI(){
 // ---------- Push ----------
 async function ensurePush(force = false){
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-  try {
-    const sub = await subscribePush();
-    if (force || sub) {
-      logLine('Push: ok');
-    }
-  } catch(e){
-    logLine('Push: error ' + (e && e.message ? e.message : e));
+
+  // РЕГИСТРАЦИЯ SW ПОД ПОД-ПУТЬ
+  const reg = await navigator.serviceWorker.register('/stopsmokedeb/sw.js', {
+    scope: '/stopsmokedeb/'
+  });
+  await navigator.serviceWorker.ready;
+
+  // подписка
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub || force){
+    const vapid = await (await fetch('api/vapidPublicKey')).text(); // <— относительный путь
+    const key = urlBase64ToUint8Array(vapid);
+    if (force && sub) { try { await sub.unsubscribe(); } catch {} }
+    sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+    await fetch('api/subscribe', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(sub)
+    });
   }
 }
+
 
 // ---------- Автозапуск ----------
 (async ()=>{
