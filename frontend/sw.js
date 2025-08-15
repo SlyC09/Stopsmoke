@@ -3,9 +3,8 @@ const CACHE = 'smoke-v3'; // <— новая версия кэша!
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    await cache.addAll([
-      '/', '/index.html', '/style.css', '/app.js', '/manifest.webmanifest'
-    ]);
+    await cache.addAll(['./', './index.html', './style.css', './app.js', './manifest.webmanifest']);
+
   })());
   self.skipWaiting();
 });
@@ -44,6 +43,6 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil((async () => {
     await broadcast({ type:'sw-log', phase:'click', at:new Date().toISOString() });
     const all = await clients.matchAll({ type:'window', includeUncontrolled:true });
-    if (all.length > 0) all[0].focus(); else clients.openWindow('/');
+    if (all.length > 0) all[0].focus(); else clients.openWindow('./');
   })());
 });

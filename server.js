@@ -117,6 +117,8 @@ app.use((req, _res, next) => { console.log(`[REQ] ${req.method} ${req.url}`); ne
 
 app.use(express.static(FRONT));
 app.get('/', (_req, res) => res.sendFile(INDEX));
+app.use('/stopsmokedeb', express.static(FRONT)); 
+app.get('/stopsmokedeb/*', (req, res) => res.sendFile(INDEX));
 
 // health
 app.get('/__ping', (_req, res) => res.send('ok'));
