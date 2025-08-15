@@ -1,0 +1,14 @@
+{
+  "name": "smoke-mvp-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-schedule": "^2.1.1",
+    "web-push": "^3.6.6"
+  }
+}

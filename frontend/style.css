@@ -1,0 +1,104 @@
+:root{
+  --bg:#0f0f0f; --fg:#f4f4f4; --muted:#9aa0a6;
+  --accent:#4ade80; --danger:#f87171;
+  --space:16px; --radius:12px; --border:#1d1d1d;
+}
+
+*{ box-sizing:border-box }
+
+/* корректная высота и safe-area */
+html, body{ height:100% }
+@supports (height: 100dvh) { html, body{ height:auto; min-height:100dvh } }
+@supports (-webkit-touch-callout: none) {
+  html{ height:-webkit-fill-available }
+  body{ min-height:-webkit-fill-available }
+}
+
+/* страница якорится к верху */
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+  padding-block-start: calc(var(--space) + env(safe-area-inset-top, 0px));
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+  overflow-x:hidden;
+}
+
+/* контейнер */
+.app{
+  max-width:720px;
+  width:100%;
+  margin:16px auto 32px;
+  padding:20px;
+  padding-inline: calc(20px + env(safe-area-inset-left, 0px))
+                  calc(20px + env(safe-area-inset-right, 0px));
+}
+
+/* типографика / карточки */
+h1{ margin:0 0 12px; font-weight:600 }
+.card{ padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius); background:#121212 }
+.label{ color:var(--muted); font-size:13px }
+.value{ font-weight:700 }
+.row{ display:flex; gap:10px; align-items:center; justify-content:space-between; margin:10px 0 }
+.timer{ font-variant-numeric:tabular-nums; font-size:22px }
+kbd{ background:#222; border-radius:6px; padding:2px 6px; border:1px solid #333 }
+hr{ border:none; border-top:1px solid #202020; margin:16px 0 }
+ul{ padding-inline-start:18px }
+
+/* кнопки */
+.grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px }
+.btn{
+  display:flex; align-items:center; justify-content:center;
+  padding:16px;
+  border:1px solid #222; border-radius:14px;
+  background:#141414; color:var(--fg);
+  font-size:16px; font-weight:600; text-align:center; cursor:pointer;
+  transition:transform .05s;
+}
+.btn:active{ transform:scale(.98) }
+.btn.big{ grid-column:1 / -1; font-size:18px; padding:18px }
+.btn.accent{ border-color:#1f3625; background:#112017; color:#e6ffe9 }
+.btn.danger{ border-color:#3a1d1d; background:#1a0f0f; color:#ffecec }
+.btn:disabled{ opacity:.45; cursor:not-allowed }
+
+@media (max-width:560px){
+  .grid{ grid-template-columns:1fr; }
+}
+
+/* ========== СИНХРОКОД: один адаптивный flex ========== */
+.card.sync-row{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+}
+/* метка всегда на своей строке */
+.card.sync-row .label{ flex:0 0 100% }
+
+/* инпут: растёт, может сжиматься, 44px высоты */
+#user-id{
+  flex:1 1 260px;        /* на широких — рядом с кнопкой; на узких — переходит на новую строку */
+  min-width:0;
+  height:44px;
+  padding:10px 12px;
+  border:1px solid #222; border-radius:12px;
+  background:#141414; color:var(--fg); font-size:16px;
+  outline:none;
+}
+
+/* кнопка: узкая, не тянется, на мобиле прижата к левому краю */
+#btn-save-user{
+  flex:0 0 auto;
+  height:44px;
+  padding:6px 12px;
+  border:1px solid #222; border-radius:12px;
+  background:#141414; color:var(--fg); font-weight:700;
+  white-space:nowrap;
+  align-self:flex-start; /* когда ушла на новую строку */
+}
+
+/* мелочи */
+.app > .card:first-of-type{ margin-top:8px }
+@media (prefers-reduced-motion: reduce){ .btn{ transition:none } }
+:focus-visible{ outline:2px solid #2a8f3a; outline-offset:2px }

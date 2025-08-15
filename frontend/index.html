@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>82 → 0 за 9 дней</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#111111">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app">
+    <h1>82 → 0 · 9 дней</h1>
+  <div class="card" style="margin-bottom:10px; display:flex; gap:10px; align-items:center;">
+      <div class="label">Синхрокод:</div>
+      <input id="user-id" value="me" style="flex:1; padding:8px; border-radius:8px; border:1px solid #333; background:#111; color:#fff">
+      <button class="btn" id="btn-save-user">Сохранить</button>
+    </div>  
+ <div class="card row">
+      <div>
+        <div class="label">Сегодня (день <span id="day-idx"></span> из <span id="days-total"></span>)</div>
+        <div class="value"><span id="today-used">0</span>/<span id="today-plan">0</span> · Остаток: <span id="total-left">82</span></div>
+      </div>
+      <div class="timer" id="timer">—:—</div>
+    </div>
+
+    <div class="grid">
+      <button class="btn big accent" id="btn-wake">Встал</button>
+      <button class="btn big" id="btn-smoke" disabled>Покурить</button>
+      <button class="btn" id="btn-early" disabled>Раньше срока</button>
+      <button class="btn" id="btn-shift" disabled>Сдвинуть +10</button>
+      <button class="btn" id="btn-skip" disabled>Пропустить</button>
+      <button class="btn danger" id="btn-sleep">Спать</button>
+    </div>
+
+    <hr>
+    <div class="card">
+      <div class="label">Молитва (08:00–22:00, каждый час):</div>
+      <div class="value">«Боже, дай мне разум и душевный покой принять то, что я не в силах изменить, мужество изменить то, что могу, и мудрость отличить одно от другого.»</div>
+    </div>
+
+    <hr>
+    <div class="card">
+      <div class="label">Подсказки/КПТ для «раньше срока» — один из:</div>
+      <ul id="hints"></ul>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
