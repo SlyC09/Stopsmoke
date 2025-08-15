@@ -486,5 +486,21 @@ setInterval(updateUI, 1000);
   state = st;
   save(); // синхронизируем на сервер/локально
   updateUI();
+  // если в состоянии есть будущий слот — убедимся, что серверная джоба стоит
+try {
+  const nextISO = state?.today?.nextSlot || null;
+  if (nextISO) {
+    const t = new Date(nextISO);
+    if (!isNaN(t) && t.getTime() > Date.now()) {
+      await scheduleServerPush(t); // восстановим на сервере
+    } else {
+      // просроченное окно — обнулим и отменим на сервере
+      state.today.nextSlot = null;
+      await cancelServerPush();
+      save();
+    }
+  }
+} catch {}
+
   await ensurePush(false);
 })();

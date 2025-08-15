@@ -109,7 +109,26 @@ function scheduleNext(userId, whenISO) {
   saveDB();
   console.log(`[SCHED] user=${userId} next=${when.toISOString()}`);
 }
-
+// ---- rehydrate jobs on boot (если сервер перезапускался) ----
+try {
+  const entries = Object.entries(db.jobs || {});
+  for (const [userId, job] of entries) {
+    const whenISO = job && job.whenISO;
+    if (whenISO) {
+      // пересоздаём только будущие даты
+      const t = new Date(whenISO);
+      if (!isNaN(t) && t.getTime() > Date.now()) {
+        scheduleNext(userId, whenISO);
+      } else {
+        // просроченные чистим
+        cancelJob(userId);
+      }
+    }
+  }
+  console.log(`[BOOT] rehydrated jobs: ${entries.length}`);
+} catch (e) {
+  console.warn('[BOOT] rehydrate error:', e.message);
+}
 // ---- app ----
 const app = express();
 app.use(express.json({ limit: '1mb' }));
