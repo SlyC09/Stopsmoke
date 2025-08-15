@@ -278,18 +278,75 @@ async function ensurePush(forceResubscribe=false){
       if (!same || forceResubscribe) { try{ await sub.unsubscribe(); }catch{} sub = null; }
     }
     if (!sub) {
-      let perm = Notification.permission;
-      if (perm !== 'granted') {
-        const res = await askPushPermissionSafely();
-        if (!res.ok) return; // на iOS попросим после установки; на остальных — после явного разрешения
-        perm = 'granted';
-      }
+      if (Notification.permission !== 'granted') return;
       sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:key });
     }
     const payload = { userId: storedUserId(), subscription: sub.toJSON() };
     await fetch('/api/subscribe', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
   }catch(e){ log('ensurePush err', e); }
 }
+let btnNotify = document.getElementById('btn-notify');
+let btnTest   = document.getElementById('btn-test-push');
+(function ensureNotifyButtonsExist(){
+  const host = document.getElementById('controls') || document.body;
+  if (!btnNotify) {
+    btnNotify = document.createElement('button');
+    btnNotify.id = 'btn-notify';
+    btnNotify.textContent = 'Включить уведомления';
+    btnNotify.hidden = true;
+    btnNotify.style.marginRight = '8px';
+    host.appendChild(btnNotify);
+  }
+  if (!btnTest) {
+    btnTest = document.createElement('button');
+    btnTest.id = 'btn-test-push';
+    btnTest.textContent = 'Тестовое уведомление';
+    btnTest.hidden = true;
+    host.appendChild(btnTest);
+  }
+})();
+
+function refreshNotifyButtons() {
+  const hasNotif = ('Notification' in window);
+  const granted  = hasNotif && Notification.permission === 'granted';
+  const canAsk   = hasNotif && !granted;
+  if (btnNotify) btnNotify.hidden = !canAsk;
+  if (btnTest)   btnTest.hidden   = !granted;
+}
+refreshNotifyButtons();
+
+if (btnNotify) {
+  btnNotify.addEventListener('click', async () => {
+    const res = await askPushPermissionSafely();   // на iOS сработает только в установленной PWA
+    if (res.ok) {
+      await ensurePush(true);                      // подпишемся и отправим сабскрипшн на сервер
+      alert('Уведомления включены 👍');
+    } else if (res.reason === 'install_required') {
+      alert('На iPhone сначала нажми «Поделиться» → «На экран “Домой”», открой с иконки и нажми кнопку ещё раз.');
+    } else if (res.reason === 'no_api') {
+      alert('Браузер не поддерживает уведомления.');
+    } else {
+      alert('Разрешение не выдано.');
+    }
+    refreshNotifyButtons();
+  });
+}
+
+if (btnTest) {
+  btnTest.addEventListener('click', async () => {
+    try {
+      await fetch('/api/debug/push-test', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ userId: storedUserId() })
+      });
+      alert('Тестовое пуш-уведомление отправлено. Проверь шторку уведомлений.');
+    } catch (e) {
+      alert('Не удалось отправить тест-пуш.');
+    }
+  });
+}
+
 function urlBase64ToUint8Array(base64String){
   const padding='='.repeat((4-base64String.length%4)%4);
   const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
