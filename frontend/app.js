@@ -238,6 +238,21 @@ function buildTailWithOnes(totalLeft, prevCap, minTailOnes){
 }
 
 // ---------- PUSH ----------
+
+// iOS detection + standalone check (чтобы пуш-разрешение просить только в установленной PWA на iOS)
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                  || window.navigator.standalone === true; // iOS Safari
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+           || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+async function askPushPermissionSafely() {
+  // На iOS Safari разрешение для пушей доступно только в установленной PWA
+  if (isIOS && !isStandalone) return { ok:false, reason:'install_required' };
+  if (!('Notification' in window)) return { ok:false, reason:'no_api' };
+  const perm = await Notification.requestPermission();
+  return { ok: perm === 'granted' };
+}
+
 async function scheduleServerPush(when){
   try{
     const body = { userId: storedUserId(), whenIso: when ? when.toISOString() : null };
@@ -264,8 +279,11 @@ async function ensurePush(forceResubscribe=false){
     }
     if (!sub) {
       let perm = Notification.permission;
-      if (perm !== 'granted') perm = await Notification.requestPermission();
-      if (perm !== 'granted') return;
+      if (perm !== 'granted') {
+        const res = await askPushPermissionSafely();
+        if (!res.ok) return; // на iOS попросим после установки; на остальных — после явного разрешения
+        perm = 'granted';
+      }
       sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:key });
     }
     const payload = { userId: storedUserId(), subscription: sub.toJSON() };
